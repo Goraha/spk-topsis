@@ -1,0 +1,196 @@
+<?php
+include "../include/koneksi.php";
+$kd_alternatif = $_GET['kd_alternatif'];
+$query = "SELECT * FROM tbl_alternatif as a left join tbl_anggota as b on a.nba=b.nba WHERE a.kd_alternatif='$kd_alternatif'";
+$sql = mysqli_query($connect, $query);
+$data = mysqli_fetch_array($sql);
+?>
+
+
+<link rel="stylesheet" href="../../asset/css/bootstrap.min.css">
+<link rel="stylesheet" href="../../asset/font-awesome-4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="../../asset/css/bootstrap-datepicker.css">
+<link rel="stylesheet" href="../../asset/css/font_style.css">
+
+<script src="../../asset/js/jquery.js"></script>
+<script src="../../asset/js/bootstrap.js"></script>
+<script src="../../asset/js/moment.js"></script>
+<script src="../../asset/js/bootstrap-datepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="../../datatables/datatables.min.css"/>
+<script type="text/javascript" src="../../datatables/datatables.min.js"></script>
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12" align="center">
+      <h1><span class="fa fa-users"></span> Hapus Data Alternatif</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12" align="right" style="margin-bottom:25px;">
+      <a type="btn" class="btn btn-outline-info" href="data_alternatif.php" style="float: right;"><i
+            class="fa fa-arrow-left"></i> Kembali</a>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12" style="border:solid #d1d1d1 1px;border-radius: 8px; padding-top:50px;padding-bottom:50px;">
+      <form method="post" action="" enctype="multipart/form-data">
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-3" align="left">
+              <label>Kode Alternatif</label>
+              <input type="text" name="kd_awal" value="<?php echo $kd_alternatif; ?>" hidden>
+              <input type="text" name="kd_alternatif" id="kd_alternatif" value="<?php echo $kd_alternatif; ?>" class="form-control" autocomplete="off" disabled>
+            </div>
+            <div class="col-md-3" align="left">
+              <label>Kode Anggota</label>
+              <div class="input-group mb-3">
+                <input type="text" name="nba" class="form-control" id="nba" value="<?php echo $data['nba']; ?>" autocomplete="off" disabled>
+                <div class="input-group-append">
+                  <button class="btn btn-secondary" id="btn_kd" type="button"  data-toggle="modal" data-target="#data_anggota"><i class="fa fa-search"></i> Pilih</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6" align="left">
+              <label>Nama Lengkap</label>
+              <input type="text" name="nm_lengkap" id="nm_lengkap" class="form-control" value="<?php echo $data['nm_lengkap']; ?>" autocomplete="off" disabled>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 5px;">
+          <?php
+                include "../include/data_kon.php";
+
+                $sql2 = $pdo->prepare("SELECT * FROM tbl_kriteria");
+                $sql2->execute();
+                while($data2 = $sql2->fetch()){
+                    $kd_kriteria = $data2['kd_kriteria'];
+                ?>
+            <div class="col-md-4" align="left">
+            <label><?php echo $data2['kd_kriteria'].'/'.$data2['nm_kriteria']; ?></label>
+            <select id="inputState" class="form-control" name="kd_subs[]" disabled>
+              <option disabled="disabled" selected="selected" value="">--Pilih--</option>
+              <?php
+                include "../include/data_kon.php";
+
+                $sql3 = $pdo->prepare("SELECT * FROM tbl_subkriteria WHERE kd_kriteria='$kd_kriteria'");
+                $sql3->execute();
+                while($data3 = $sql3->fetch()){
+                    $kd_subkriteriax= $data3['kd_subkriteria'];
+                ?>
+                <?php
+                        include "../include/koneksi.php";
+                            $query5 = "SELECT * FROM tbl_nilai_alternatif where kd_alternatif= '$kd_alternatif' and kd_subkriteria ='$kd_subkriteriax'";
+                            $sql5 = mysqli_query($connect, $query5);
+                            $data5 = mysqli_fetch_array($sql5);
+                            $kd_subs=$data5['kd_subkriteria'];
+                           
+                          ?>
+                          
+              <option value="<?php echo $kd_subkriteriax; ?>" <?php if($kd_subkriteriax==$kd_subs){echo "selected"; }else{} ?>><?php echo $data3['nm_subkriteria']; ?></option>
+              
+                <?php 
+                    }
+                ?>
+            </select>
+          </div>
+                <?php 
+                }
+                ?>
+          </div>
+
+          <div class="row" style="margin-top: 35px;">
+            <div class="col-md-6" style="margin-top: 5px;">
+              <button type="submit" name="simpan" class="btn btn-outline-danger btn-block"><span class="fa fa-save"></span>
+                Hapus </button>
+            </div>
+            <div class="col-md-6" style="margin-top: 5px;">
+              <a href="data_alternatif.php" class="btn btn-outline-success btn-block"><span class="fa fa-arrow-left"></span>
+                Batal
+              </a>
+            </div>
+          </div>
+        </div> <!-- form-group// -->
+
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modal -->
+<form method="post" action="" enctype="multipart/form-data" class="form-horizontal">
+<div class="modal fade bd-example-modal-lg" id="data_anggota" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Data Anggota</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+        <table id="example" class="table table-hover table-bordered data" style="font-size:12px;">
+                <thead>
+                    <tr style="background-image: linear-gradient(90deg, #5433FF, #20BDFF, #A5FECB);color: white;">			
+                        <th class="text-center">No</th>
+                        <th class="text-center">Kode Anggota</th>
+                        <th class="text-center">Nama Lengkap</th>
+                        <th class="text-center">Tanggal Lahir</th>
+                        <th class="text-center">JK</th>
+                        <th class="text-center">Pekerjaan</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <?php
+            include "../include/data_kon.php";
+            $sql = $pdo->prepare("SELECT * FROM tbl_anggota");
+            $sql->execute();
+            $no = 1;
+            while($data = $sql->fetch()){
+            ?>
+            <tr>				
+                <td class="align-middle text-center"><b><?php echo $no; ?></b></td>
+                <td class="align-middle text-center"><?php echo $data['nba']; ?></td>
+                <td class="align-middle text-center"><?php echo $data['nm_lengkap']; ?></td>
+                <td class="align-middle text-center"><?php echo $data['tgl_lahir']; ?></td>
+                <td class="align-middle text-center"><?php echo $data['jk']; ?></td>
+                <td class="align-middle text-center"><?php echo $data['pekerjaan']; ?></td>
+                <td class="align-middle text-center" style="padding:0px;">
+                <button type="button" class="btn btn-outline-success pilih" data-toggle="modal" data-dismiss="modal" data-target="#forms" data-kd="<?php echo $data['nba']; ?>" data-nm="<?php echo $data['nm_lengkap']; ?>" ><i class="fa fa-close"></i> Pilih</button>
+                </td>
+                        
+            </tr>
+            <?php
+                $no++;
+                }
+            ?>
+                </tbody>
+            </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+
+<?php
+
+include "../include/koneksi.php";
+IF(ISSET($_POST['simpan'])){
+
+$kd_awal = $_POST['kd_awal'];
+
+$query = "DELETE FROM tbl_alternatif WHERE kd_alternatif='".$kd_awal."'";
+$sql = mysqli_query($connect, $query);
+  if($sql){
+    echo "<script language=\"javascript\">alert(\"Berhasil Menghapus Data\");document.location.href='data_alternatif.php';</script>";
+  }else{
+    echo "<script language=\"javascript\">alert(\"Gagal Menghapus Data\");document.location.href='data_alternatif.php';</script>";
+  }
+}
+?>
